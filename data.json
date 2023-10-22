@@ -1,0 +1,14 @@
+
+[
+    {
+        "id" : 1,
+        "name" : "Przykladowa dana",
+        "description" : "To jest 1 przykladowa dana"
+
+    },
+    {
+        "id" : 2,
+        "name" : "Przykladowa dana 2",
+        "description" : "To jest 2 przykladowa dana"
+    }
+]
