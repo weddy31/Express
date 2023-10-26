@@ -1,60 +1,66 @@
-var express = require('express');
-var app = express();
-var bodyParser = require('body-parser');
-var fs = require('fs');
-app.use(bodyParser.json())
+const express = require('express');
+const app = express();
+const bodyParser = require('body-parser');
+const mysql = require('mysql2');
 
-var dataFile = 'data.json';
+app.use(bodyParser.json());
 
-app.get('/data', function(req, res){
-   fs.readFile(dataFile, 'utf8', (err, data) =>{
-    if(err){
-        res.status(500).json({ error: "blad odczytu pliku json"});
-        return;
+const connection = mysql.createConnection({
+  host: 'localhost',
+  user: 'root',
+  password: '',
+  database: '123' 
+});
+
+connection.connect((err) => {
+  if (err) {
+    console.error('Błąd połączenia z bazą danych: ' + err.message);
+  } else {
+    console.log('Połączono z bazą danych MySQL');
+  }
+});
+
+app.get('/data', (req, res) => {
+  connection.query('SELECT * FROM dane', (err, results) => {
+    if (err) {
+      console.error('Błąd zapytania SQL: ' + err.message);
+      res.status(500).json({ error: 'Błąd zapytania SQL', details: err.message });
+      return;
     }
-    const jsonData = JSON.parse(data);
-    res.json(jsonData);
-   })
+
+    res.json(results);
+  });
 });
 
-app.post('/data', (req, res) =>{
-    fs.readFile(dataFile, 'utf8', (err, data) =>{
-        if(err){
-            res.status(500).json({error: 'blad odczytu pliku json'});
-            return;
-        }
-        const jsonData = JSON.parse(data);
-        jsonData.push(req.body);
-        fs.writeFile(dataFile, JSON.stringify(jsonData), (err) =>{
-            if(err){
-                res.status(500).json({error : 'blad zapisus do pliku json'})
-                return;
-            }
-            res.json({message: 'Dane zostaly dodane'})
-        });
-    });
+app.post('/data', (req, res) => {
+  const { field1, field2 } = req.body; // Zakładając, że dane są przekazywane jako JSON: { "pole1": "wartosc1", "pole2": "wartosc2" }
+
+  connection.query('INSERT INTO dane (id, kolumna_123321) VALUES (?, ?)', [field1, field2], (err, results) => {
+    if (err) {
+      console.error('Błąd zapytania SQL: ' + err.message);
+      res.status(500).json({ error: 'Błąd zapytania SQL', details: err.message });
+      return;
+    }
+
+    res.json({ message: 'Dane zostały dodane' });
+  });
 });
 
-app.delete('/data/:id', (req, res) =>{
-    const id = req.params.id;
-    fs.readFile(dataFile, 'utf8', (err, data)=>{
-        if(err){
-            res.status(500).json({error: 'blad odczytu pliku json'});
-            return;
-        }
-        const jsonData = JSON.parse(data);
-        const newData = jsonData.filter((item, index) => index != id);
+app.delete('/data/:id', (req, res) => {
+  const id = req.params.id;
+  connection.query('DELETE FROM dane WHERE id = ?', id, (err, results) => {
+    if (err) {
+      console.error('Błąd zapytania SQL: ' + err.message);
+      res.status(500).json({ error: 'Błąd zapytania SQL', details: err.message });
+      return;
+    }
 
-        fs.writeFile(dataFile, JSON.stringify(newData), (err) =>{
-            if(err){
-                res.status(500).json({error : 'blad zapisu do pliku json'});
-                return;
-            }
-            res.json({message: 'dane zostaly usuniete'});
-        });
-    });
+    res.json({ message: 'Dane zostały usunięte' });
+  });
 });
+
 const port = 3000;
-app.listen(port, () =>{
-    console.log("Serwer dziala na porcie 3000");
+app.listen(port, () => {
+  console.log('Serwer działa na porcie 3000');
 });
+
