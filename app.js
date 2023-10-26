@@ -33,7 +33,7 @@ app.get('/data', (req, res) => {
 });
 
 app.post('/data', (req, res) => {
-  const { field1, field2 } = req.body; // Zakładając, że dane są przekazywane jako JSON: { "pole1": "wartosc1", "pole2": "wartosc2" }
+  const { field1, field2 } = req.body; // Zakładając, że dane są przekazywane jako JSON: { "field1": "wartosc1", "field2": "wartosc2" }
 
   connection.query('INSERT INTO dane (id, kolumna_123321) VALUES (?, ?)', [field1, field2], (err, results) => {
     if (err) {
